@@ -6,7 +6,7 @@ const navItems = [
   { title: "Projects", path: "/projects" },
   { title: "About", path: "/about" },
   { title: "Contact", path: "/contact" },
-  
+  { title: "Manage", path: "/manage" }
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {

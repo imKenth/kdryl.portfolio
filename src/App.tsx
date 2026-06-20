@@ -7,6 +7,7 @@ import HomePage from "./pages/HomePage";
 import ProjectsPage from "./pages/ProjectsPage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
+import ManageProjectsPage from "./pages/ManageProjectsPage";
 import { useEffect, useState } from "react";
 
 const loaderVariants = {
@@ -34,6 +35,7 @@ function App() {
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/manage" element={<ManageProjectsPage />} />
           <Route path="*" element={<HomePage />} />
         </Routes>
       </Layout>

@@ -10,13 +10,7 @@ export default function ImageCarousel({ images, title }: ImageCarouselProps) {
   const [current, setCurrent] = useState(0);
   const [zoomed, setZoomed] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const startInterval = useCallback(() => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % images.length);
-    }, 4000);
-  }, [images.length]);
+  const zoomedRef = useRef(false);
 
   const stopInterval = useCallback(() => {
     if (intervalRef.current) {
@@ -25,38 +19,54 @@ export default function ImageCarousel({ images, title }: ImageCarouselProps) {
     }
   }, []);
 
-  useEffect(() => {
-    if (images.length > 1 && !zoomed) {
-      startInterval();
-    } else {
-      stopInterval();
+  const startInterval = useCallback(() => {
+    stopInterval();
+    if (images.length > 1) {
+      intervalRef.current = setInterval(() => {
+        if (!zoomedRef.current) {
+          setCurrent((prev) => (prev + 1) % images.length);
+        }
+      }, 4000);
     }
+  }, [images.length, stopInterval]);
+
+  useEffect(() => {
+    startInterval();
     return stopInterval;
-  }, [images.length, zoomed, startInterval, stopInterval]);
+  }, [startInterval, stopInterval]);
 
-  const goTo = (index: number) => {
+  const goTo = useCallback((index: number) => {
     setCurrent(index);
-    stopInterval();
-  };
+  }, []);
 
-  const prev = () => {
+  const prev = useCallback(() => {
     setCurrent((prev) => (prev - 1 + images.length) % images.length);
-    stopInterval();
-  };
+  }, [images.length]);
 
-  const next = () => {
+  const next = useCallback(() => {
     setCurrent((prev) => (prev + 1) % images.length);
+  }, [images.length]);
+
+  const openZoom = useCallback(() => {
+    zoomedRef.current = true;
     stopInterval();
-  };
+    setZoomed(true);
+  }, [stopInterval]);
+
+  const closeZoom = useCallback(() => {
+    zoomedRef.current = false;
+    setZoomed(false);
+    startInterval();
+  }, [startInterval]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!zoomed) return;
-      if (e.key === "Escape") setZoomed(false);
+      if (e.key === "Escape") closeZoom();
       if (e.key === "ArrowLeft") prev();
       if (e.key === "ArrowRight") next();
     },
-    [zoomed]
+    [zoomed, closeZoom, prev, next]
   );
 
   useEffect(() => {
@@ -75,20 +85,21 @@ export default function ImageCarousel({ images, title }: ImageCarouselProps) {
   return (
     <>
       <div className="group relative overflow-hidden rounded-3xl bg-slate-950">
-        <AnimatePresence mode="wait">
-          <motion.img
-            key={current}
-            src={images[current]}
-            alt={`${title} - image ${current + 1}`}
-            loading="lazy"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            onClick={() => setZoomed(true)}
-            className="h-52 w-full cursor-pointer object-cover"
-          />
-        </AnimatePresence>
+        <div className="h-52 w-full" onClick={openZoom}>
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={current}
+              src={images[current]}
+              alt={`${title} - image ${current + 1}`}
+              loading="lazy"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="h-full w-full cursor-pointer object-cover"
+            />
+          </AnimatePresence>
+        </div>
 
         {images.length > 1 && (
           <>
@@ -130,16 +141,17 @@ export default function ImageCarousel({ images, title }: ImageCarouselProps) {
       <AnimatePresence>
         {zoomed && (
           <motion.div
+            key="zoom-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
-            onClick={() => setZoomed(false)}
+            onClick={closeZoom}
           >
             <button
               type="button"
-              onClick={() => setZoomed(false)}
+              onClick={(e) => { e.stopPropagation(); closeZoom(); }}
               className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
@@ -147,18 +159,23 @@ export default function ImageCarousel({ images, title }: ImageCarouselProps) {
               </svg>
             </button>
 
-            <AnimatePresence mode="wait">
-              <motion.img
-                key={current}
-                src={images[current]}
-                alt={`${title} - image ${current + 1}`}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="max-h-full max-w-full rounded-2xl object-contain"
-              />
-            </AnimatePresence>
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center justify-center"
+            >
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={current}
+                  src={images[current]}
+                  alt={`${title} - image ${current + 1}`}
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="max-h-full max-w-full rounded-2xl object-contain"
+                />
+              </AnimatePresence>
+            </div>
 
             {images.length > 1 && (
               <>

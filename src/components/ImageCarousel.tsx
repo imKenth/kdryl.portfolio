@@ -141,9 +141,8 @@ function ImageCarouselInner({ images, title }: ImageCarouselProps) {
 
       {zoomed && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black"
           onClick={closeZoom}
-          onMouseMove={(e) => e.stopPropagation()}
         >
           <button
             type="button"
@@ -155,16 +154,12 @@ function ImageCarouselInner({ images, title }: ImageCarouselProps) {
             </svg>
           </button>
 
-          <div
+          <img
+            src={images[current]}
+            alt={`${title} - image ${current + 1}`}
             onClick={(e) => e.stopPropagation()}
-            className="flex h-full w-full items-center justify-center"
-          >
-            <img
-              src={images[current]}
-              alt={`${title} - image ${current + 1}`}
-              className="max-h-full max-w-full rounded-2xl object-contain"
-            />
-          </div>
+            className="max-h-[90vh] max-w-[90vw] rounded-2xl object-contain"
+          />
 
           {images.length > 1 && (
             <>

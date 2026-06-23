@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { memo, useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ImageCarouselProps {
@@ -6,7 +6,7 @@ interface ImageCarouselProps {
   title: string;
 }
 
-export default function ImageCarousel({ images, title }: ImageCarouselProps) {
+function ImageCarouselInner({ images, title }: ImageCarouselProps) {
   const [current, setCurrent] = useState(0);
   const [zoomed, setZoomed] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -168,9 +168,9 @@ export default function ImageCarousel({ images, title }: ImageCarouselProps) {
                   key={current}
                   src={images[current]}
                   alt={`${title} - image ${current + 1}`}
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.8, opacity: 0 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
                   className="max-h-full max-w-full rounded-2xl object-contain"
                 />
@@ -218,3 +218,5 @@ export default function ImageCarousel({ images, title }: ImageCarouselProps) {
     </>
   );
 }
+
+export default memo(ImageCarouselInner);

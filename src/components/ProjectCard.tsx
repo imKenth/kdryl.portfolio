@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { optimizeCloudinaryUrl } from "../utils/cloudinary";
 import ImageCarousel from "./ImageCarousel";
@@ -11,9 +12,12 @@ interface ProjectCardProps {
 }
 
 export default function ProjectCard({ title, description, tech, imageUrls, liveUrl }: ProjectCardProps) {
-  const optimizedImages = imageUrls?.length
-    ? imageUrls.map((url) => optimizeCloudinaryUrl(url, 720, 480))
-    : [];
+  const optimizedImages = useMemo(
+    () => imageUrls?.length
+      ? imageUrls.map((url) => optimizeCloudinaryUrl(url, 720, 480))
+      : [],
+    [imageUrls]
+  );
 
   return (
     <motion.article

@@ -1,4 +1,5 @@
 import { memo, useEffect, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 
 interface ImageCarouselProps {
@@ -138,10 +139,11 @@ function ImageCarouselInner({ images, title }: ImageCarouselProps) {
         )}
       </div>
 
-      {zoomed && (
+      {zoomed && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black p-4"
           onClick={closeZoom}
+          onMouseMove={(e) => e.stopPropagation()}
         >
           <button
             type="button"
@@ -155,7 +157,7 @@ function ImageCarouselInner({ images, title }: ImageCarouselProps) {
 
           <div
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center justify-center"
+            className="flex h-full w-full items-center justify-center"
           >
             <img
               src={images[current]}
@@ -199,7 +201,8 @@ function ImageCarouselInner({ images, title }: ImageCarouselProps) {
               </div>
             </>
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

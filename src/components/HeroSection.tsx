@@ -16,7 +16,6 @@ export default function HeroSection() {
   useEffect(() => {
     if (!db) return;
     const unsub = onSnapshot(doc(db, "settings", "profile"), (snap: any) => {
-      if (snap.metadata.fromCache) return;
       if (snap.exists() && snap.data().imageUrl) {
         setProfileSrc(snap.data().imageUrl);
       }

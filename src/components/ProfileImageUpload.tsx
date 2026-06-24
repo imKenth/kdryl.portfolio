@@ -16,7 +16,6 @@ export default function ProfileImageUpload() {
     if (!db) return;
 
     const unsub = onSnapshot(doc(db, "settings", "profile"), (snap: any) => {
-      if (snap.metadata.fromCache) return;
       if (snap.exists()) {
         const data = snap.data();
         if (data.imageUrl) setImageUrl(data.imageUrl);

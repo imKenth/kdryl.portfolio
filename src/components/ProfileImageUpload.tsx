@@ -1,10 +1,10 @@
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db } from "../lib/firebase";
-import { defaultProfileImage, optimizeCloudinaryUrl, uploadImage } from "../utils/cloudinary";
+import { optimizeCloudinaryUrl, uploadImage } from "../utils/cloudinary";
 
 export default function ProfileImageUpload() {
-  const [imageUrl, setImageUrl] = useState(defaultProfileImage);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -16,6 +16,7 @@ export default function ProfileImageUpload() {
     if (!db) return;
 
     const unsub = onSnapshot(doc(db, "settings", "profile"), (snap: any) => {
+      if (snap.metadata.fromCache) return;
       if (snap.exists()) {
         const data = snap.data();
         if (data.imageUrl) setImageUrl(data.imageUrl);
@@ -69,11 +70,13 @@ export default function ProfileImageUpload() {
       </p>
 
       <div className="mt-6 flex items-center gap-6">
-        <img
-          src={optimizeCloudinaryUrl(preview || imageUrl, 160, 160)}
-          alt="Profile"
-          className="h-28 w-28 flex-shrink-0 rounded-full border-4 border-brand-500/20 bg-slate-950 object-cover shadow-soft"
-        />
+        {(preview || imageUrl) && (
+          <img
+            src={optimizeCloudinaryUrl(preview || imageUrl!, 160, 160)}
+            alt="Profile"
+            className="h-28 w-28 flex-shrink-0 rounded-full border-4 border-brand-500/20 bg-slate-950 object-cover shadow-soft"
+          />
+        )}
 
         <div className="space-y-3">
           <label className="inline-flex cursor-pointer items-center justify-center rounded-full border border-slate-700 bg-slate-950 px-5 py-2 text-sm font-medium text-slate-200 transition hover:bg-slate-800">

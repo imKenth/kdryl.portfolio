@@ -1,6 +1,7 @@
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db } from "../lib/firebase";
+import ProfileImageUpload from "../components/ProfileImageUpload";
 import ProjectForm, { ProjectFormValues } from "../components/ProjectForm";
 
 interface FirestoreProject extends ProjectFormValues {
@@ -122,6 +123,8 @@ export default function ManageProjectsPage() {
           </button>
         </div>
       </div>
+
+      <ProfileImageUpload />
 
       <div className="grid gap-10 xl:grid-cols-[1.2fr_0.8fr]">
         <ProjectForm

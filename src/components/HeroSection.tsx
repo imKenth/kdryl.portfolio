@@ -1,17 +1,31 @@
 import { motion } from "framer-motion";
+import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
+import { db } from "../lib/firebase";
 import { defaultProfileImage, optimizeCloudinaryUrl } from "../utils/cloudinary";
 
 const roles = ["Frontend Developer", "UI/UX Specialist", "React Enthusiast"];
 
 export default function HeroSection() {
+  const [profileSrc, setProfileSrc] = useState(defaultProfileImage);
   const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
   const [displayText, setDisplayText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
+  useEffect(() => {
+    if (!db) return;
+    const unsub = onSnapshot(doc(db, "settings", "profile"), (snap: any) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.imageUrl) setProfileSrc(data.imageUrl);
+      }
+    });
+    return unsub;
+  }, []);
+
   const profileImageUrl = useMemo(
-    () => optimizeCloudinaryUrl(defaultProfileImage, 360, 360),
-    []
+    () => optimizeCloudinaryUrl(profileSrc, 360, 360),
+    [profileSrc]
   );
 
   useEffect(() => {

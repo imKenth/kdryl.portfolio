@@ -2,12 +2,13 @@ import { motion } from "framer-motion";
 import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
 import { db } from "../lib/firebase";
-import { defaultProfileImage, optimizeCloudinaryUrl } from "../utils/cloudinary";
+import { optimizeCloudinaryUrl } from "../utils/cloudinary";
 
 const roles = ["Frontend Developer", "UI/UX Specialist", "React Enthusiast"];
 
 export default function HeroSection() {
-  const [profileSrc, setProfileSrc] = useState(defaultProfileImage);
+  const [profileSrc, setProfileSrc] = useState<string | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
   const [displayText, setDisplayText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
@@ -15,16 +16,16 @@ export default function HeroSection() {
   useEffect(() => {
     if (!db) return;
     const unsub = onSnapshot(doc(db, "settings", "profile"), (snap: any) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        if (data.imageUrl) setProfileSrc(data.imageUrl);
+      if (snap.metadata.fromCache) return;
+      if (snap.exists() && snap.data().imageUrl) {
+        setProfileSrc(snap.data().imageUrl);
       }
     });
     return unsub;
   }, []);
 
   const profileImageUrl = useMemo(
-    () => optimizeCloudinaryUrl(profileSrc, 360, 360),
+    () => (profileSrc ? optimizeCloudinaryUrl(profileSrc, 360, 360) : null),
     [profileSrc]
   );
 
@@ -53,17 +54,20 @@ export default function HeroSection() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.25),_transparent_35%)] opacity-70" />
       <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-10 text-center text-slate-100 md:flex-row md:items-center md:text-left">
         <motion.div
-          initial={{ opacity: 0, y: 36 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: imageLoaded ? 1 : 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="relative z-10 flex-shrink-0"
         >
           <div className="relative rounded-full border-4 border-brand-500/20 bg-slate-950 p-1 shadow-[0_0_80px_rgba(59,130,246,0.12)]">
-            <img
-              src={profileImageUrl}
-              alt="Profile"
-              className="h-40 w-40 rounded-full object-cover shadow-2xl ring-4 ring-slate-950"
-            />
+            {profileImageUrl && (
+              <img
+                src={profileImageUrl}
+                alt="Profile"
+                onLoad={() => setImageLoaded(true)}
+                className="h-40 w-40 rounded-full object-cover shadow-2xl ring-4 ring-slate-950"
+              />
+            )}
             <div className="pointer-events-none absolute inset-0 rounded-full border border-brand-500/40 opacity-0 transition duration-500 group-hover:opacity-100" />
           </div>
         </motion.div>
